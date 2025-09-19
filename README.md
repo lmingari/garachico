@@ -44,7 +44,7 @@ or
 ```console
 cwltool --singularity workflow.cwl arguments.yml
 ```
-for singularity/apptainer.
+for udocker and singularity/apptainer.
 
 <!----------------------------------------------------------------------------->
 
