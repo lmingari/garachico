@@ -584,7 +584,7 @@ $graph:
       NetworkAccess:
         networkAccess: true
       DockerRequirement:
-        dockerPull: docker.io/lmingari/garachico:1.0
+        dockerPull: docker.io/lmingari/garachico:1.1
       SchemaDefRequirement:
         types:
           - name: MeteoDatabase
