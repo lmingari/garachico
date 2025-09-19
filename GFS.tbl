@@ -1,0 +1,36 @@
+|-----------------------------------------------|
+|                                               |
+|     FALL3D dictionary for GFS model           |
+|                                               |
+|-----------------------------------------------|
+| READ_DIM |  DIM_DBS    |  DIM_GFS             | 
+|-----------------------------------------------|
+|    1     |  DIM_LON    |  longitude           |
+|    1     |  DIM_LAT    |  latitude            |
+|    1     |  DIM_LEV    |  lev                 |
+|    1     |  DIM_TIME   |  time                |
+|-----------------------------------------------|
+| READ_VAR |  VAR_DBS    |  VAR_GFS             |
+|-----------------------------------------------|
+|    1     |  VAR_LON    |  longitude           |  Longitudes (1D)
+|    1     |  VAR_LAT    |  latitude            |  Latitudes (1D)
+|    1     |  VAR_LEV    |  lev                 |  Pressure levels (1D)
+|    1     |  VAR_TIME   |  time                |  Time (1D)
+|    1     |  VAR_TOPO   |  HGT_surface         |  Terrain height (m2/s2)
+|    1     |  VAR_LMASK  |  LAND_surface        |  Land-sea mask
+|    1     |  VAR_Z0     |  SFCR_surface        |  Roughness surface
+|    1     |  VAR_PBLH   |  HPBL_surface        |  Boundary layer height
+|    1     |  VAR_UST    |  UST                 |  Friction velocity
+|    1     |  VAR_SMOI   |  SMOIS               |  Soil moisture
+|    1     |  VAR_PRATE  |  PRATE_surface       |  Precipitation rate
+|    1     |  VAR_U10    |  UGRD_10maboveground |  U wind component at 10 m
+|    1     |  VAR_V10    |  VGRD_10maboveground |  V wind component at 10 m
+|    1     |  VAR_T2     |  TMP_2maboveground   |  Temperature at 2 m
+|    1     |  VAR_PSFC   |  PRES_surface        |  Surface pressure
+|    1     |  VAR_HGT    |  HGT                 |  Model level heights
+|    1     |  VAR_T      |  TMP                 |  Temperature
+|    1     |  VAR_U      |  UGRD                |  U wind component
+|    1     |  VAR_V      |  VGRD                |  V wind component
+|    1     |  VAR_OMEGA  |  VVEL                |  Vertical velocity in Pa/s
+|    1     |  VAR_RH     |  RH                  |  Relative humidity
+|-----------------------------------------------|

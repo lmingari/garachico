@@ -1,0 +1,81 @@
+# ---------- Stage 1: Build ----------
+FROM python:3.11-alpine AS build
+
+# Set maintainer information for the Docker image.
+LABEL maintainer="lmingari <lmingari@gmail.com>"
+
+# Set the working directory inside the build stage.
+WORKDIR /build
+
+# Install build dependencies:
+RUN apk add --no-cache \
+    build-base \
+    gfortran \
+    cmake \
+    openssh \
+    openmpi-dev \
+    libpng-dev \
+    openjpeg-dev \
+    libaec-dev \
+    netcdf-dev \
+    netcdf-fortran-dev \
+    && rm -rf /var/cache/apk/*
+
+# Define the URL for the wgrib2 source code.
+ENV WGRIB2_URL="ftp://ftp.cpc.ncep.noaa.gov/wd51we/wgrib2/wgrib2.tgz"
+ENV FALL3D_URL="https://gitlab.com/fall3d-suite/fall3d/-/archive/master/fall3d-master.tar.gz"
+
+# --- Second program ---
+RUN wget ${WGRIB2_URL} \
+    && tar -xzvf wgrib2.tgz \
+    && cd grib2 \
+    && export CC=gcc \
+    && export FC=gfortran \
+    && sed -i 's/^USE_AEC=0/USE_AEC=1/' makefile || true \
+    && sed -i 's/^USE_OPENJPEG=0/USE_OPENJPEG=1/' makefile || true \
+    && sed -i 's/^USE_PNG=0/USE_PNG=1/' makefile || true \
+    && sed -i 's/^USE_NETCDF3=0/USE_NETCDF3=1/' makefile || true \
+    && make clean \
+    && make -j 8
+
+# --- FALL3D ---
+RUN wget ${FALL3D_URL} \
+    && tar -xf fall3d-master.tar.gz \
+    && mkdir fall3d-master/build \
+    && cd fall3d-master/build \
+    && cmake .. -DWITH-MPI=YES -DCUSTOM_COMPILER_FLAGS="-O3" \
+    && make -j 8
+
+# ---------- Stage 2: Executables ----------
+FROM python:3.11-alpine as execs
+
+WORKDIR /app
+
+# Install runtime dependencies:
+RUN apk add --no-cache \
+    musl \
+    libgcc \
+    libstdc++ \
+    openmpi \
+    openssh \
+    libgfortran \
+    libgomp \
+    libpng \
+    openjpeg \
+    libaec \
+    netcdf \
+    netcdf-fortran \
+    && rm -rf /var/cache/apk/*
+
+# Copy only the executables from the build stage
+COPY --from=build /build/grib2/wgrib2/wgrib2 /app/wgrib2
+COPY --from=build /build/fall3d-master/build/bin/Fall3d.x /app/Fall3d.x
+
+# Set PATH so executables are usable
+ENV PATH="/app:${PATH}"
+ENV OMPI_ALLOW_RUN_AS_ROOT=1
+ENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+
+# Sanity check during build
+RUN Fall3d.x --version
+RUN wgrib2 --version || true

@@ -1,0 +1,10 @@
+fall3dutil
+numpy
+rasterio 
+rio-cogeo
+xarray 
+shapely 
+netCDF4 
+h5netcdf 
+Cartopy
+gdal==3.10.3

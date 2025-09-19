@@ -1,0 +1,46 @@
+#Eruption parameters
+volcano: Garachico-small
+lat_vent: 28.316667
+lon_vent: -16.766667
+elevation_vent: 1300
+date: '20250915'
+start_time: 9
+end_time: 24
+particle_cutoff: 2000
+
+#Model configuration
+meteo_database: 'GFS'
+initial_condition: 'NONE'
+west_lon: -17.0
+east_lon: -16.0
+south_lat: 27.9
+north_lat: 28.7
+dx: 0.02
+dy: 0.02
+nlevels: 20
+
+# Phases
+phases:
+  - {start: 10, end: 12, height: 8000}
+  - {start: 12, end: 24, height: 2000}
+
+# GFS configuration: 
+resolution: 0.25
+step: 3
+
+# MPI configuration
+nx: 2
+ny: 1
+nz: 1
+
+# Plot configuration
+keys:
+  - tephra_col_mass
+  - tephra_grn_load
+  - tephra_con_layer
+  - tephra_cloud_top
+times:
+  - 6
+  - 9
+  - 12
+  - 15
