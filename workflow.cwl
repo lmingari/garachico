@@ -2,9 +2,18 @@
 cwlVersion: v1.2
 $namespaces:
   s: https://schema.org/
-s:softwareVersion: 0.0.1
 schemas:
 - http://schema.org/version/9.0/schemaorg-current-http.rdf
+
+s:softwareVersion: 0.0.1
+
+s:author:
+  - class: s:Person
+    s:name: Leonardo Mingari
+    s:email: mailto:lmingari@csic.es
+    s:identifier: https://orcid.org/0000-0002-6584-4699
+
+s:codeRepository: https://https://github.com/lmingari/garachico
 
 $graph:
   - id: config
@@ -575,7 +584,7 @@ $graph:
       NetworkAccess:
         networkAccess: true
       DockerRequirement:
-        dockerPull: garachico:1.0
+        dockerPull: docker.io/lmingari/garachico:1.0
       SchemaDefRequirement:
         types:
           - name: MeteoDatabase
