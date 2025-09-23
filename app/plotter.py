@@ -177,6 +177,8 @@ class MapImage:
             top = self.ds["layer_top"].isel(layer=i).item()
             bottom = self.ds["layer_bottom"].isel(layer=i).item()
             label = f"{label} (FL{bottom:.0f}-{top:.0f})"
+        elif 'tephra_grn_load':
+            label = "deposit thickness"
 
         ### Append units
         units = self._get_units()
@@ -194,7 +196,7 @@ class MapImage:
         elif self.key in ["SO2_col_mass"]:
             units = 'DU'
         elif self.key in ["tephra_grn_load", "SO2_grn_load"]:
-            units = 'kg~m^{-2}'
+            units = 'mm'
         elif self.key in ["tephra_cloud_top", "SO2_cloud_top"]:
             units = 'km'
         else:

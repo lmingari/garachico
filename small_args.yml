@@ -3,9 +3,9 @@ volcano: Garachico-small
 lat_vent: 28.2667
 lon_vent: -16.7642
 elevation_vent: 1360
-date: '20250922'
+date: '20250923'
 start_time: 10
-end_time: 28
+end_time: 34
 particle_cutoff: 2500
 
 #Model configuration
@@ -21,8 +21,8 @@ nlevels: 25
 
 # Phases
 phases:
-  - {start: 10, end: 12, height: 8000}
-  - {start: 12, end: 28, height: 6000}
+  - {start: 10, end: 14.5, height: 8000}
+  - {start: 14.5, end: 34, height: 6000}
 
 # GFS configuration: 
 resolution: 0.25
@@ -35,11 +35,9 @@ nz: 1
 
 # Plot configuration
 keys:
-  - tephra_col_mass
   - tephra_grn_load
-  - tephra_con_layer
-  - tephra_cloud_top
 times:
   - 6
   - 12
   - 18
+  - 24
