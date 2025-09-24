@@ -186,7 +186,7 @@ class MapImage:
     def _get_label(self):
         label = self.data.long_name.replace("_", " ")
 
-        if label == 'tephra_grn_load': 
+        if self.key == 'tephra_grn_load': 
             label = "deposit thickness"
 
         if 'layer' in self.dims:
