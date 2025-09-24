@@ -349,15 +349,18 @@ $graph:
       lon:
         type: float?
         inputBinding: {prefix: --lon}
-      time:
-        type: int?
-        inputBinding: {prefix: --time}
+      times:
+        type: int[]?
+        inputBinding: {prefix: --times}
+      layers:
+        type: int[]?
+        inputBinding: {prefix: --layers}
       logo:
         type: string?
         inputBinding: {prefix: --logo}
     outputs:
-      png:
-        type: File
+      pngs:
+        type: File[]
         outputBinding: {glob: "*.png"}   
 
   - id: cog_creator
@@ -447,6 +450,7 @@ $graph:
       # Plot inputs
       times: int[]
       keys: string[]
+      layers: int[]?
     outputs: 
       pngs:
         type: Directory
@@ -541,16 +545,16 @@ $graph:
         out: [log,res]
       plot_maps:
         run: "#plotter"
-        scatter: [time,key]
-        scatterMethod: flat_crossproduct
+        scatter: key
         in:
           key: keys
-          time: times
+          times: times
+          layers: layers
           netcdf: run_fall3d/res
           lon: lon_vent
           lat: lat_vent
           logo: {default: "/app/logo.png"}
-        out: [png]
+        out: [pngs]
       create_cogs:
         run: "#cog_creator"
         scatter: [time,key]
@@ -563,7 +567,9 @@ $graph:
       png_folder:
         run: "#gather_files"
         in:
-          files: plot_maps/png
+          files: 
+            source: plot_maps/pngs
+            valueFrom: $(self.flat())
           folder:
             source: [date,volcano]
             valueFrom: $(self.join("/"))
@@ -584,7 +590,7 @@ $graph:
       NetworkAccess:
         networkAccess: true
       DockerRequirement:
-        dockerPull: docker.io/lmingari/garachico:1.1
+        dockerPull: docker.io/lmingari/garachico:1.2
       SchemaDefRequirement:
         types:
           - name: MeteoDatabase

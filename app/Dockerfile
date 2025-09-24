@@ -1,5 +1,5 @@
 # ---------- Stage 1: Build ----------
-FROM fall3d-wgrib2:latest AS builder
+FROM fall3d-wgrib2:0.1 AS builder
 
 WORKDIR /build
 
@@ -29,7 +29,7 @@ ENV PATH="/build/venv/bin:${PATH}"
 RUN pip install --no-cache-dir -r requirements.txt
 
 # ---------- Stage 2: Executables ----------
-FROM fall3d-wgrib2:latest
+FROM fall3d-wgrib2:0.1
 
 WORKDIR /app
 

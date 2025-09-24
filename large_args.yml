@@ -36,8 +36,12 @@ nz: 1
 # Plot configuration
 keys:
   - tephra_con_layer
+  - tephra_col_mass
 times:
   - 6
   - 12
   - 18
   - 24
+layers:
+  - 0
+  - 1

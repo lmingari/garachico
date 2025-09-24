@@ -36,6 +36,7 @@ nz: 1
 # Plot configuration
 keys:
   - tephra_grn_load
+  - tephra_col_mass
 times:
   - 6
   - 12

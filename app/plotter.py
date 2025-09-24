@@ -11,6 +11,7 @@ import cartopy
 import cartopy.crs as crs
 import cartopy.feature as cfeature
 from PIL import Image
+from itertools import product
 
 cartopy.config['data_dir'] = '/root/.local/share/cartopy'
 
@@ -26,10 +27,9 @@ FMT_TIME = "%Y-%m-%d %H:%MZ"
 class MapImage:
     def __init__(self,ncfile):
         self.key      = None
-        self.it       = None
-        self.time_fmt = None
+        self.dims     = None
         self.data     = None
-        self.label    = None
+        self.indexes  = None
         self.hires    = False
         ###
         ### Open netcdf
@@ -37,47 +37,52 @@ class MapImage:
         self.ds = xr.open_dataset(ncfile)
         self.nt = self.ds.sizes['time']
         ###
-        ### Create plot
+        ### Plot config
         ###
         if self.ds.lon.cell_measures < 0.1 or self.ds.lat.cell_measures < 0.1:
             self.hires = True
-        self.fig, self.ax = self._create_map()
 
-    def load(self,key,time):
-        #
+    def set_key(self,key):
         if key in self.ds:
-            da = self.ds[key]
-            self.key = key
+            self.key  = key
+            self.dims = self.ds[key].dims
         else:
-            logger.info(f"Variable {key} not found. Nothing to do")
-            return
-        ###
-        ### Indexing dataarray
-        ###
-        dims = ['time', 'lev', 'bin', 'fl', 'layer']
-        d = {dim: 0 for dim in dims if dim in da.dims}
-        if 'time' in da.dims:
-            it = time%self.nt
-            d['time'] = it
-            self.it  = it
-            self.time_fmt = self.ds.isel(time=it)['time'].dt.strftime(FMT_TIME).item()
+            logger.exception(f"Variable {key} not found")
+            raise RuntimeError("Aborting program due to error: key not found")
+
+    def key_indexes(self, **required_indexes):
+        indexable_dims = ['time','lev','bin','fl','layer']
+        indexes = {dim: [0] for dim in self.dims if dim in indexable_dims}
+        for dim in indexes:
+            if required_indexes[dim]: indexes[dim] = required_indexes[dim]
+
+        # Generate Cartesian product
+        keys = list(indexes.keys())
+        values = list(indexes.values())
+
+        for combo in product(*values):
+            yield dict(zip(keys, combo))
+
+    def load(self,indexes):
+        if self.key is None: return
         ###
         ### Get data
         ###
-        self.data = da[d]
-        self.label = self._get_label(d)
+        da = self.ds[self.key]
+        self.data = da[indexes]
+        self.indexes = indexes
         ###
         ### Work with a 2-d array da(lat,lon)
         ###
         if ["lat","lon"] != sorted(self.data.dims): 
-            logger.info(f"Incorrect dimensions for {args.key}. Nothing to do")
+            logger.info(f"Incorrect dimensions for {self.key}. Nothing to do")
             return
 
     def plot(self):
         if self.key is None: return
 
-        ax  = self.ax
-        fig = self.fig
+        fig, ax = self._create_map()
+        self.ax = ax
         #
         autoScale = False
         #
@@ -110,7 +115,7 @@ class MapImage:
             axes_class=plt.Axes)
         cbar = fig.colorbar(fc, 
             orientation='horizontal',
-            label = self.label,
+            label = self._get_label(),
             cax=cax)
         cbar.set_ticks(levels[:-1])
 
@@ -120,9 +125,11 @@ class MapImage:
         ###
         if self.key is None: return
 
-        if self.it is not None: 
-            self.ax.set_title(self.time_fmt, loc='right')
-            self.ax.set_title(f"+{self.it:03d}h FCST", loc='left')
+        if 'time' in self.dims:
+            it = self.indexes['time']
+            time_fmt = self.ds.isel(time=it)['time'].dt.strftime(FMT_TIME).item()
+            self.ax.set_title(f"valid: {time_fmt}", loc='right')
+            self.ax.set_title(f"+{it:03d}h FCST", loc='left')
 
     def add_marker(self,lon,lat):
         ###
@@ -158,27 +165,35 @@ class MapImage:
         """
         if self.key is None: return
 
-        if self.it is None:
-            fname = f"{self.key}.png"
-        else:
-            fname = f"{self.key}_{self.it:03}.png"
+        prefix = self.key
+        suffix = ""
 
+        if 'layer' in self.dims:
+            ilayer = self.indexes['layer']
+            suffix += f"_l{ilayer}"
+
+        if 'time' in self.dims:
+            it = self.indexes['time']
+            suffix += f"_t{it:03}"
+
+        fname = f"{prefix}{suffix}.png"
         logger.info(f"Saving {fname}")
         ##
         ## Save output file
         ##
         plt.savefig(fname,dpi=200,bbox_inches='tight')
 
-    def _get_label(self, dims):
+    def _get_label(self):
         label = self.data.long_name.replace("_", " ")
 
-        if 'layer' in dims:
-            i = dims['layer']
+        if label == 'tephra_grn_load': 
+            label = "deposit thickness"
+
+        if 'layer' in self.dims:
+            i = self.indexes['layer']
             top = self.ds["layer_top"].isel(layer=i).item()
             bottom = self.ds["layer_bottom"].isel(layer=i).item()
             label = f"{label} (FL{bottom:.0f}-{top:.0f})"
-        elif 'tephra_grn_load':
-            label = "deposit thickness"
 
         ### Append units
         units = self._get_units()
@@ -281,12 +296,14 @@ def main(args):
     if args.logo is None: addLogo = False
     #
     c = MapImage(args.netcdf)
-    c.load(args.key, args.time)
-    c.plot()
-    if addVolcano: c.add_marker(args.lon,args.lat)
-    if addLogo: c.add_logo(args.logo)
-    c.add_title()
-    c.save()
+    c.set_key(args.key)
+    for ind in c.key_indexes(time = args.times, layer = args.layers):
+        c.load(ind)
+        c.plot()
+        if addVolcano: c.add_marker(args.lon,args.lat)
+        if addLogo: c.add_logo(args.logo)
+        c.add_title()
+        c.save()
 
 if __name__ == "__main__":
     # Argument parser
@@ -295,7 +312,8 @@ if __name__ == "__main__":
     parser.add_argument("--key",    metavar='variable',  type=str,   help="Variable name in NetCDF", required=True)
     parser.add_argument('--lat',    metavar='latitude',  type=float, help='Volcano latitude')
     parser.add_argument('--lon',    metavar='longitude', type=float, help='Volcano longitude')
-    parser.add_argument("--time",   metavar='stepIndex', type=int,   help='Time step index', default = -1)
+    parser.add_argument("--times",  metavar='indexes',   type=int,   help='List of time step index', nargs='+')
+    parser.add_argument("--layers", metavar='indexes',   type=int,   help='List of layer indexes', nargs='+')
     parser.add_argument("--logo",   metavar='file',      type=str,   help='Logo image')
     args = parser.parse_args()
 
