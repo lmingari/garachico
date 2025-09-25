@@ -3,7 +3,7 @@ volcano: Garachico-large
 lat_vent: 28.2667
 lon_vent: -16.7642
 elevation_vent: 1360
-date: '20250923'
+date: '20250925'
 start_time: 10
 end_time: 34
 particle_cutoff: 20
@@ -29,7 +29,7 @@ resolution: 0.25
 step: 3
 
 # MPI configuration
-nx: 2
+nx: 4
 ny: 2
 nz: 1
 
