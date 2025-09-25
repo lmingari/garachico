@@ -273,6 +273,11 @@ class MapImage:
                 )
         ax.add_feature(LAND, zorder=0)
         ax.add_feature(BORDERS, linewidth=0.4)
+        x1, x2 = self.ds.lon.minimum, self.ds.lon.maximum
+        y1, y2 = self.ds.lat.minimum, self.ds.lat.maximum
+        x1, x2 = x1 - (x2-x1)*0.1, x2 + (x2-x1)*0.1
+        y1, y2 = y1 - (y2-y1)*0.1, y2 + (y2-y1)*0.1
+        ax.set_extent([x1,x2,y1,y2], crs=proj)
         ###
         ### Add grid lines
         ###
